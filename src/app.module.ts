@@ -1,8 +1,9 @@
-import { Module } from '@nestjs/common';
-import { MulterModule } from '@nestjs/platform-express';
-import { memoryStorage } from 'multer';
+import { Module } from "@nestjs/common";
+import { MulterModule } from "@nestjs/platform-express";
+import { memoryStorage } from "multer";
 
-import { AppController } from './app.controller';
+import { AppController } from "./app.controller";
+import { AppService } from "./app.service";
 
 @Module({
   imports: [
@@ -11,6 +12,6 @@ import { AppController } from './app.controller';
     }),
   ],
   controllers: [AppController],
-  providers: [],
+  providers: [AppService],
 })
 export class AppModule {}
