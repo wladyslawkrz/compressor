@@ -15,10 +15,10 @@ import {
   ApiProduces,
   ApiQuery,
 } from "@nestjs/swagger";
-
-import { AppService } from "./app.service";
 import { Response } from "express";
 import { join } from "path";
+
+import { AppService } from "./app.service";
 
 @Controller()
 export class AppController {
