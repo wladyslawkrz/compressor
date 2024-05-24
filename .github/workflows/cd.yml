@@ -1,0 +1,24 @@
+name: NESTJS CD
+
+on:
+  push:
+    branches: [master]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy compressor using SSH
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.KEY }}
+          port: 22
+          script: |
+            cd /usr/compressor
+            git pull origin master
+            git status
+            docker stop compressor
+            docker rm compressor
+            docker compose up --build -d

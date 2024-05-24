@@ -14,12 +14,14 @@ import {
   ApiOperation,
   ApiProduces,
   ApiQuery,
+  ApiTags,
 } from "@nestjs/swagger";
 import { Response } from "express";
 import { join } from "path";
 
 import { AppService } from "./app.service";
 
+@ApiTags("App")
 @Controller()
 export class AppController {
   constructor(private readonly appService: AppService) {}

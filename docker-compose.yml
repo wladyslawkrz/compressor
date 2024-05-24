@@ -1,0 +1,8 @@
+version: '3.8'
+
+services:
+  main_back:
+    build: .
+    container_name: compressor
+    ports:
+      - "3009:3009"
