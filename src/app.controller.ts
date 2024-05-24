@@ -1,6 +1,8 @@
 import {
   Controller,
   Get,
+  HttpCode,
+  HttpStatus,
   Post,
   Query,
   Res,
@@ -11,6 +13,8 @@ import { FileInterceptor } from "@nestjs/platform-express";
 import {
   ApiBody,
   ApiConsumes,
+  ApiInternalServerErrorResponse,
+  ApiOkResponse,
   ApiOperation,
   ApiProduces,
   ApiQuery,
@@ -21,18 +25,18 @@ import { join } from "path";
 
 import { AppService } from "./app.service";
 
-@ApiTags("App")
+@ApiTags("Compressor routes")
+@ApiInternalServerErrorResponse({
+  description:
+    "An error occured while processing the image transform. Please check your input data for correctness or try again later.",
+})
 @Controller()
 export class AppController {
   constructor(private readonly appService: AppService) {}
 
-  @Get()
-  getHello(): string {
-    return "hello world";
-  }
-
   @Post("transform-webp")
   @ApiOperation({ summary: "Upload an image to transform" })
+  @ApiOkResponse({ description: "The image was transformed successfully" })
   @ApiConsumes("multipart/form-data")
   @ApiProduces("application/octet-stream")
   @ApiBody({
@@ -62,6 +66,7 @@ export class AppController {
       "Compression ratio of the image (0-100, higher is better, default: 100)",
     required: false,
   })
+  @HttpCode(HttpStatus.OK)
   @UseInterceptors(FileInterceptor("image"))
   async uploadImage(
     @Query("width") width: string,
@@ -76,6 +81,33 @@ export class AppController {
       Number(height),
       Number(compressionRatio)
     );
+    const absolutePath = join(__dirname, "..", filePath);
+    res.sendFile(absolutePath);
+  }
+
+  @ApiOperation({ summary: "Upload an image to transform" })
+  @ApiOkResponse({ description: "The image was transformed successfully" })
+  @ApiConsumes("multipart/form-data")
+  @ApiProduces("application/octet-stream")
+  @ApiBody({
+    schema: {
+      type: "object",
+      properties: {
+        image: {
+          type: "string",
+          format: "binary",
+        },
+      },
+    },
+  })
+  @UseInterceptors(FileInterceptor("image"))
+  @HttpCode(HttpStatus.OK)
+  @Post("compress-animated")
+  async compressGif(
+    @UploadedFile() gif: Express.Multer.File,
+    @Res() res: Response
+  ) {
+    const filePath = await this.appService.compressGif(gif);
     const absolutePath = join(__dirname, "..", filePath);
     res.sendFile(absolutePath);
   }

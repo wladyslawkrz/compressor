@@ -5,10 +5,6 @@ import * as sharp from "sharp";
 
 @Injectable()
 export class AppService {
-  getHello(): string {
-    return "Hello World!";
-  }
-
   async transform(
     images: Express.Multer.File,
     width: number,
@@ -43,6 +39,18 @@ export class AppService {
     await sharp(images.buffer)
       .resize(resizeProps)
       .webp({ ...compressionRatioProps, effort: 6 })
+      .toFile(outputPath);
+
+    return outputPath;
+  }
+
+  async compressGif(gif: Express.Multer.File) {
+    const filename = "animated" + "-" + randomUUID() + ".webp";
+
+    const outputPath = join("uploads", filename);
+
+    await sharp(gif.buffer, { animated: true })
+      .webp({ effort: 6 })
       .toFile(outputPath);
 
     return outputPath;
