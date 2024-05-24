@@ -44,13 +44,19 @@ export class AppService {
     return outputPath;
   }
 
-  async compressGif(gif: Express.Multer.File) {
+  async compressGif(gif: Express.Multer.File, compressionRatio: number) {
     const filename = "animated" + "-" + randomUUID() + ".webp";
 
     const outputPath = join("uploads", filename);
 
+    const compressionRatioProps = { quality: 100 };
+
+    if (compressionRatio) {
+      compressionRatioProps.quality = compressionRatio;
+    }
+
     await sharp(gif.buffer, { animated: true })
-      .webp({ effort: 6 })
+      .webp({ ...compressionRatioProps, effort: 6 })
       .toFile(outputPath);
 
     return outputPath;

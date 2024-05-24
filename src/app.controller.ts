@@ -1,6 +1,5 @@
 import {
   Controller,
-  Get,
   HttpCode,
   HttpStatus,
   Post,
@@ -101,13 +100,23 @@ export class AppController {
     },
   })
   @UseInterceptors(FileInterceptor("image"))
+  @ApiQuery({
+    name: "compressionRatio",
+    description:
+      "Compression ratio of the image (0-100, higher is better, default: 100)",
+    required: false,
+  })
   @HttpCode(HttpStatus.OK)
   @Post("compress-animated")
   async compressGif(
+    @Query("compressionRatio") compressionRatio: string,
     @UploadedFile() gif: Express.Multer.File,
     @Res() res: Response
   ) {
-    const filePath = await this.appService.compressGif(gif);
+    const filePath = await this.appService.compressGif(
+      gif,
+      Number(compressionRatio)
+    );
     const absolutePath = join(__dirname, "..", filePath);
     res.sendFile(absolutePath);
   }
