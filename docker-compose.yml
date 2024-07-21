@@ -1,8 +1,18 @@
-version: '3.8'
-
 services:
-  main_back:
-    build: .
-    container_name: compressor
+  # server:
+  #   build: .
+  #   container_name: compressor
+  #   ports:
+  #     - "3010:3010"
+  #   depends_on:
+  #     - minio
+  minio:
+    image: minio/minio
+    volumes:
+      - ./data/minio:/data
     ports:
-      - "3009:3009"
+      - '9001:9001'
+      - '9000:9000'
+    env_file:
+      - .env
+    command: server --console-address ":9001" /data

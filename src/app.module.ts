@@ -1,17 +1,21 @@
 import { Module } from "@nestjs/common";
 import { MulterModule } from "@nestjs/platform-express";
+import { ConfigModule } from "@nestjs/config";
 import { memoryStorage } from "multer";
 
-import { AppController } from "./app.controller";
-import { AppService } from "./app.service";
+import { CompressModule } from "./compress/compress.module";
+import { StorageModule } from "./storage/storage.module";
 
 @Module({
   imports: [
     MulterModule.register({
       storage: memoryStorage(),
     }),
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
+    CompressModule,
+    StorageModule,
   ],
-  controllers: [AppController],
-  providers: [AppService],
 })
 export class AppModule {}
