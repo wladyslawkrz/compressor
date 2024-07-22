@@ -1,6 +1,6 @@
 import { Module } from "@nestjs/common";
 
-import { CompressController } from "./comporess.controller";
+import { CompressController } from "./compress.controller";
 import { CompressService } from "./compress.service";
 import { StorageModule } from "../storage/storage.module";
 

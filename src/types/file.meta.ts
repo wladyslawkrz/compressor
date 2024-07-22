@@ -27,4 +27,9 @@ export type CompressedOutput = {
   fileName: string;
 };
 
-export type AppMimeType = "image/webp" | "video/webm";
+export enum CompressionPreset {
+  WEBM = "WEBM",
+  MP4 = "MP4",
+}
+
+export type AppMimeType = "image/webp" | "video/webm" | "video/mp4";

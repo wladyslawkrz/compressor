@@ -6,7 +6,7 @@ import * as fs from "fs";
 import * as path from "path";
 import * as ffmpeg from "fluent-ffmpeg";
 import { StorageService } from "src/storage/storage.service";
-import { BufferedFile } from "src/types";
+import { BufferedFile, CompressionPreset } from "src/types";
 
 @Injectable()
 export class CompressService {
@@ -73,7 +73,12 @@ export class CompressService {
     video: Express.Multer.File,
     noSound: boolean,
     width: number,
-    height: number
+    height: number,
+    preset: CompressionPreset,
+    crf: number,
+    audioBitrate: number,
+    videoBitrate: number,
+    videoFramerate: number
   ) {
     const inputDirectoryPath = path.join("temp", "input");
     if (!fs.existsSync(inputDirectoryPath)) {
@@ -94,14 +99,19 @@ export class CompressService {
       inputFileTempPath,
       noSound,
       width,
-      height
+      height,
+      preset,
+      crf,
+      audioBitrate,
+      videoBitrate,
+      videoFramerate
     );
     const videoBuffer = fs.readFileSync(pathToCompressedVideo);
     const fileWithMetadata: BufferedFile = {
       buffer: videoBuffer,
       originalname: pathToCompressedVideo.split("/").pop(),
       fieldname: video.fieldname,
-      mimetype: "video/webm",
+      mimetype: preset === CompressionPreset.MP4 ? "video/mp4" : "video/webm",
       size: videoBuffer.length,
     };
 
@@ -118,36 +128,75 @@ export class CompressService {
     pathToFile: string,
     noSound: boolean,
     width: number,
-    height: number
+    height: number,
+    preset: CompressionPreset,
+    crf: number,
+    audioBitrate: number,
+    videoBitrate: number,
+    videoFramerate: number
   ) {
     const outputDirectoryPath = path.join("temp", "output");
     if (!fs.existsSync(outputDirectoryPath)) {
       fs.mkdirSync(outputDirectoryPath, { recursive: true });
     }
-    const outputFilename = randomUUID() + ".webm";
+    const outputFilename =
+      randomUUID() + (preset === CompressionPreset.MP4 ? ".mp4" : ".webm");
     const outputFilePath = path.join(outputDirectoryPath, outputFilename);
 
     return new Promise<string>((resolve, reject) => {
-      let command = ffmpeg(pathToFile)
-        .outputOptions(["-c:v libvpx-vp9", "-crf 40", "-b:v 0"])
-        .toFormat("webm");
+      let command = ffmpeg(pathToFile);
+      const crfValue = crf ? crf : 23;
+
+      if (preset === CompressionPreset.MP4) {
+        command = command.outputOptions([
+          "-c:v libx264",
+          "-pix_fmt yuv420p",
+          `-crf ${crfValue}`,
+        ]);
+      } else {
+        command = command.outputOptions([
+          "-c:v libvpx-vp9",
+          `-crf ${crfValue}`,
+        ]);
+      }
+
+      if (!preset) {
+        command = command.toFormat("webm");
+      }
+
+      if (preset) {
+        const formatValue = preset === CompressionPreset.MP4 ? "mp4" : "webm";
+        command = command.toFormat(formatValue);
+      }
+
+      if (videoBitrate) {
+        const videoBitrateString = videoBitrate ? `${videoBitrate}k` : "0";
+        console.log(videoBitrateString);
+        command = command.videoBitrate(videoBitrateString);
+      }
 
       if (noSound) {
         command = command.noAudio();
       }
 
+      if (audioBitrate && !noSound) {
+        const audioBitrateString = audioBitrate ? `${audioBitrate}k` : "0";
+        command = command.audioBitrate(audioBitrateString);
+      }
+
+      if (videoFramerate) {
+        command = command.FPS(videoFramerate);
+      }
+
       if (width && !height) {
-        console.log("+width -height");
         command = command.size(`${width}x?`);
       }
 
       if (height && !width) {
-        console.log("-width +height");
         command = command.size(`?x${height}`);
       }
 
       if (width && height) {
-        console.log("+width +height");
         command = command.size(`${width}x${height}`);
       }
 

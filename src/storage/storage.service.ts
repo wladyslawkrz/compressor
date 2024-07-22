@@ -53,11 +53,11 @@ export class StorageService {
     );
 
     const s3publicUrl = this.config.get<string>("S3_PUBLIC_URL");
-    const uploadUrl = presignedUrl.replace(
-      "http://localhost:9000/",
-      s3publicUrl
-    );
-    return uploadUrl;
+    // const uploadUrl = presignedUrl.replace(
+    //   "http://localhost:9000/",
+    //   s3publicUrl
+    // );
+    return presignedUrl;
   }
 
   async getS3StorageBucketList() {

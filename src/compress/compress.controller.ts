@@ -4,6 +4,7 @@ import {
   HttpCode,
   HttpStatus,
   ParseBoolPipe,
+  ParseEnumPipe,
   ParseIntPipe,
   Post,
   Query,
@@ -26,6 +27,7 @@ import { Response } from "express";
 import { join } from "path";
 
 import { CompressService } from "./compress.service";
+import { CompressionPreset } from "src/types";
 
 @ApiTags("Compressor routes")
 @ApiInternalServerErrorResponse({
@@ -164,12 +166,59 @@ export class CompressController {
     required: false,
   })
   @UseInterceptors(FileInterceptor("video"))
+  @ApiQuery({
+    name: "preset",
+    description:
+      "Preset for the compression (default: WEBM, values: WEBM, MP4)",
+    enum: CompressionPreset,
+    required: false,
+  })
+  @ApiQuery({
+    name: "crf",
+    description:
+      "Constant Rate Factor value (default: 23, values in range 0-51, lower value - better quality and big file size, higher value - lower quality and less size)",
+    type: Number,
+    required: false,
+  })
+  @ApiQuery({
+    name: "audioBitrate",
+    description: "Audio track bitrate (measure - kilobites (k))",
+    type: Number,
+    required: false,
+  })
+  @ApiQuery({
+    name: "videoBitrate",
+    description: "Video bitrate (measure - kilobites (k))",
+    type: Number,
+    required: false,
+  })
+  @ApiQuery({
+    name: "videoFramerate",
+    description: "Video framerate (FPS), integer value",
+    type: Number,
+    required: false,
+  })
   @HttpCode(HttpStatus.OK)
   async compressVideo(
     @UploadedFile() video: Express.Multer.File,
+    @Query(
+      "preset",
+      new ParseEnumPipe(CompressionPreset, {
+        optional: true,
+      })
+    )
+    preset?: CompressionPreset,
+    @Query("crf", new ParseIntPipe({ optional: true })) crf?: number,
     @Query("width", new ParseIntPipe({ optional: true })) width?: number,
     @Query("height", new ParseIntPipe({ optional: true })) height?: number,
-    @Query("noSound", new ParseBoolPipe({ optional: true })) noSound?: boolean
+    @Query("audioBitrate", new ParseIntPipe({ optional: true }))
+    audioBitrate?: number,
+    @Query("videoBitrate", new ParseIntPipe({ optional: true }))
+    videoBitrate?: number,
+    @Query("videoFramerate", new ParseIntPipe({ optional: true }))
+    videoFramerate?: number,
+    @Query("noSound", new ParseBoolPipe({ optional: true }))
+    noSound?: boolean
   ) {
     if (!video) {
       throw new BadRequestException("No video file uploaded");
@@ -178,7 +227,12 @@ export class CompressController {
       video,
       noSound,
       width,
-      height
+      height,
+      preset,
+      crf,
+      audioBitrate,
+      videoBitrate,
+      videoFramerate
     );
     return { message: "Video successfully compressed", downloadUrl: url };
   }
