@@ -85,7 +85,7 @@ export class CompressController {
       Number(height),
       Number(compressionRatio)
     );
-    const absolutePath = join(__dirname, "..", filePath);
+    const absolutePath = join(__dirname, "..", "..", filePath);
     res.sendFile(absolutePath);
   }
 
@@ -122,7 +122,7 @@ export class CompressController {
       gif,
       Number(compressionRatio)
     );
-    const absolutePath = join(__dirname, "..", filePath);
+    const absolutePath = join(__dirname, "..", "..", filePath);
     res.sendFile(absolutePath);
   }
 
