@@ -19,8 +19,9 @@ export const MinioClientFactory: FactoryProvider<Minio.Client> = {
         endPoint: config.get<string>("S3_ENDPOINT"),
         port: +config.get<number>("S3_API_PORT"),
         useSSL: isSslActive,
-        accessKey: config.get<string>("MINIO_ACCESS_KEY"),
-        secretKey: config.get<string>("MINIO_SECRET_KEY"),
+
+        accessKey: config.get<string>("MINIO_ROOT_USER"),
+        secretKey: config.get<string>("MINIO_ROOT_PASSWORD"),
       });
       logger.verbose("MINIO Client started successfully");
 
