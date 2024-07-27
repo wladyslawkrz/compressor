@@ -57,7 +57,7 @@ export class StorageService {
       "http://localhost:9000/",
       s3publicUrl
     );
-    return uploadUrl;
+    return presignedUrl;
   }
 
   async getS3StorageBucketList() {

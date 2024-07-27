@@ -236,4 +236,69 @@ export class CompressController {
     );
     return { message: "Video successfully compressed", downloadUrl: url };
   }
+
+  @Post("crop-video")
+  @ApiOperation({ summary: "Crop a video" })
+  @ApiOkResponse({ description: "The video was cropped successfully" })
+  @ApiConsumes("multipart/form-data")
+  @ApiProduces("application/octet-stream")
+  @ApiBody({
+    description: "Video to crop",
+    required: true,
+    schema: {
+      type: "object",
+      properties: {
+        video: {
+          type: "string",
+          format: "binary",
+          description: "Upload a video file",
+        },
+      },
+    },
+  })
+  @ApiQuery({
+    name: "width",
+    description: "Width of the video frame in pixels",
+    type: Number,
+    required: true,
+  })
+  @ApiQuery({
+    name: "height",
+    description: "Height of the video frame in pixels",
+    type: Number,
+    required: true,
+  })
+  @ApiQuery({
+    name: "x",
+    description: "X coordinate of the top-left corner of the crop area",
+    type: Number,
+    required: false,
+  })
+  @ApiQuery({
+    name: "y",
+    description: "Y coordinate of the top-left corner of the crop area",
+    type: Number,
+    required: false,
+  })
+  @UseInterceptors(FileInterceptor("video"))
+  @HttpCode(HttpStatus.OK)
+  async cropVideo(
+    @UploadedFile() video: Express.Multer.File,
+    @Query("width", new ParseIntPipe()) width: number,
+    @Query("height", new ParseIntPipe()) height: number,
+    @Query("x", new ParseIntPipe({ optional: true })) x: number,
+    @Query("y", new ParseIntPipe({ optional: true })) y: number
+  ) {
+    if (!video) {
+      throw new BadRequestException("No video file uploaded");
+    }
+    const url = await this.compress.cropVideoAndSaveToS3(
+      video,
+      width,
+      height,
+      x,
+      y
+    );
+    return { message: "Video successfully cropped", downloadUrl: url };
+  }
 }

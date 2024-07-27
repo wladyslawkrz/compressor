@@ -124,7 +124,85 @@ export class CompressService {
     return s3publicLink;
   }
 
-  async compressVideo(
+  async cropVideoAndSaveToS3(
+    video: Express.Multer.File,
+    width: number,
+    height: number,
+    x: number,
+    y: number
+  ) {
+    const inputDirectoryPath = path.join("temp", "input");
+    if (!fs.existsSync(inputDirectoryPath)) {
+      fs.mkdirSync(inputDirectoryPath, { recursive: true });
+    }
+
+    const filename = randomUUID() + path.extname(video.originalname);
+    const inputFileTempPath = path.join(inputDirectoryPath, filename);
+    fs.writeFile(inputFileTempPath, video.buffer, (err) => {
+      if (err) {
+        this.compressorLogger.error(err);
+      } else {
+        this.compressorLogger.verbose(`File saved to ${inputFileTempPath}`);
+      }
+    });
+
+    const pathToCroppedVideo = await this.cropVideo(
+      inputFileTempPath,
+      width,
+      height,
+      x,
+      y
+    );
+    const videoBuffer = fs.readFileSync(pathToCroppedVideo);
+    const fileWithMetadata: BufferedFile = {
+      buffer: videoBuffer,
+      originalname: pathToCroppedVideo.split("/").pop(),
+      fieldname: video.fieldname,
+      mimetype: "video/mp4",
+      size: videoBuffer.length,
+    };
+
+    const s3publicLink =
+      await this.storage.saveVideoToS3Storage(fileWithMetadata);
+
+    await this.removeTempFile(inputFileTempPath);
+    await this.removeTempFile(pathToCroppedVideo);
+
+    return s3publicLink;
+  }
+
+  private async cropVideo(
+    pathToInputFile: string,
+    width: number,
+    height: number,
+    x: number,
+    y: number
+  ) {
+    const outputDirectoryPath = path.join("temp", "output");
+    if (!fs.existsSync(outputDirectoryPath)) {
+      fs.mkdirSync(outputDirectoryPath, { recursive: true });
+    }
+
+    const outputFilename = randomUUID() + ".mp4";
+    const outputFilePath = path.join(outputDirectoryPath, outputFilename);
+
+    return new Promise<string>((resolve, reject) => {
+      let command = ffmpeg(pathToInputFile);
+      let cropSize = `${width ? width : "-1"}:${height ? height : "-1"}`;
+      let cropPositioning = `${x ? x : "0"}:${y ? y : "0"}`;
+
+      command = command.outputOptions([
+        `-vf crop=${cropSize}:${cropPositioning}`,
+      ]);
+
+      command
+        .on("end", () => resolve(outputFilePath))
+        .on("error", (err) => reject(err.message))
+        .save(outputFilePath);
+    });
+  }
+
+  private async compressVideo(
     pathToFile: string,
     noSound: boolean,
     width: number,
@@ -207,7 +285,7 @@ export class CompressService {
     });
   }
 
-  async removeTempFile(path: string) {
+  private async removeTempFile(path: string) {
     fs.unlink(path, (err) => {
       if (err) {
         this.compressorLogger.error(
