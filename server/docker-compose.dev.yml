@@ -1,17 +1,11 @@
 services:
-  server:
-    build: .
-    container_name: compressor
-    ports:
-      - "3010:3010"
-    depends_on:
-      - minio
   minio:
     image: minio/minio
     volumes:
       - ./data/minio:/data
     ports:
-      - "127.0.0.1:9000:9000"
+      - "9001:9001"
+      - "9000:9000"
     env_file:
       - .env
     command: server --console-address ":9001" /data

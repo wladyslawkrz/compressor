@@ -10,8 +10,8 @@ import {
 import { StorageService } from "./storage.service";
 import { ApiOperation, ApiQuery, ApiTags } from "@nestjs/swagger";
 
-@ApiTags("S3 storage debugger")
-@Controller("s3-debug")
+// @ApiTags("S3 storage debugger")
+// @Controller("s3-debug")
 export class StorageController {
   constructor(private readonly storageService: StorageService) {}
 
