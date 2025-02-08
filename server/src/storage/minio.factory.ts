@@ -11,17 +11,14 @@ export const MinioClientFactory: FactoryProvider<Minio.Client> = {
   provide: MINIO_CLIENT,
   useFactory: async () => {
     try {
-      const bucketName = config.get<string>("S3_BUCKET");
-      const isSslActive =
-        config.get<string>("S3_USE_SSL") === "false" ? false : true;
+      const bucketName = config.getOrThrow<string>("S3_BUCKET");
 
       const minioClient = new Minio.Client({
-        endPoint: config.get<string>("S3_ENDPOINT"),
-        port: +config.get<number>("S3_API_PORT"),
-        useSSL: isSslActive,
-
-        accessKey: config.get<string>("MINIO_ROOT_USER"),
-        secretKey: config.get<string>("MINIO_ROOT_PASSWORD"),
+        endPoint: config.getOrThrow<string>("S3_ENDPOINT"),
+        port: +config.getOrThrow<number>("S3_API_PORT"),
+        useSSL: false,
+        accessKey: config.getOrThrow<string>("MINIO_ROOT_USER"),
+        secretKey: config.getOrThrow<string>("MINIO_ROOT_PASSWORD"),
       });
       logger.verbose("MINIO Client started successfully");
 
@@ -30,7 +27,7 @@ export const MinioClientFactory: FactoryProvider<Minio.Client> = {
       if (!isBucketExists) {
         await minioClient.makeBucket(bucketName);
         logger.verbose(
-          `Initial bucket "${bucketName}" has been successfully created`
+          `Initial bucket "${bucketName}" has been successfully created`,
         );
       }
 

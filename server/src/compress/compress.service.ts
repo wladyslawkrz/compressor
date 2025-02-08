@@ -1,10 +1,10 @@
 import { Injectable, Logger } from "@nestjs/common";
-import { join } from "path";
-import { randomUUID } from "crypto";
+import { join, extname } from "node:path";
+import * as fs from "node:fs";
+import { randomUUID } from "node:crypto";
 import * as sharp from "sharp";
-import * as fs from "fs";
-import * as path from "path";
 import * as ffmpeg from "fluent-ffmpeg";
+
 import { StorageService } from "src/storage/storage.service";
 import { BufferedFile, CompressionPreset } from "src/types";
 
@@ -18,12 +18,12 @@ export class CompressService {
     images: Express.Multer.File,
     width: number,
     height: number,
-    compressionRatio: number
+    compressionRatio: number,
   ): Promise<string> {
     const filename = "image" + "-" + randomUUID() + ".webp";
 
     const { width: imageWidth, height: imageHeight } = await sharp(
-      images.buffer
+      images.buffer,
     ).metadata();
 
     const resizeProps = { height: imageHeight, width: imageWidth };
@@ -78,15 +78,15 @@ export class CompressService {
     crf: number,
     audioBitrate: number,
     videoBitrate: number,
-    videoFramerate: number
+    videoFramerate: number,
   ) {
-    const inputDirectoryPath = path.join("temp", "input");
+    const inputDirectoryPath = join("temp", "input");
     if (!fs.existsSync(inputDirectoryPath)) {
       fs.mkdirSync(inputDirectoryPath, { recursive: true });
     }
 
-    const filename = randomUUID() + path.extname(video.originalname);
-    const inputFileTempPath = path.join(inputDirectoryPath, filename);
+    const filename = randomUUID() + extname(video.originalname);
+    const inputFileTempPath = join(inputDirectoryPath, filename);
     fs.writeFile(inputFileTempPath, video.buffer, (err) => {
       if (err) {
         this.compressorLogger.error(err);
@@ -104,7 +104,7 @@ export class CompressService {
       crf,
       audioBitrate,
       videoBitrate,
-      videoFramerate
+      videoFramerate,
     );
     const videoBuffer = fs.readFileSync(pathToCompressedVideo);
     const fileWithMetadata: BufferedFile = {
@@ -129,15 +129,15 @@ export class CompressService {
     width: number,
     height: number,
     x: number,
-    y: number
+    y: number,
   ) {
-    const inputDirectoryPath = path.join("temp", "input");
+    const inputDirectoryPath = join("temp", "input");
     if (!fs.existsSync(inputDirectoryPath)) {
       fs.mkdirSync(inputDirectoryPath, { recursive: true });
     }
 
-    const filename = randomUUID() + path.extname(video.originalname);
-    const inputFileTempPath = path.join(inputDirectoryPath, filename);
+    const filename = randomUUID() + extname(video.originalname);
+    const inputFileTempPath = join(inputDirectoryPath, filename);
     fs.writeFile(inputFileTempPath, video.buffer, (err) => {
       if (err) {
         this.compressorLogger.error(err);
@@ -151,7 +151,7 @@ export class CompressService {
       width,
       height,
       x,
-      y
+      y,
     );
     const videoBuffer = fs.readFileSync(pathToCroppedVideo);
     const fileWithMetadata: BufferedFile = {
@@ -176,15 +176,15 @@ export class CompressService {
     width: number,
     height: number,
     x: number,
-    y: number
+    y: number,
   ) {
-    const outputDirectoryPath = path.join("temp", "output");
+    const outputDirectoryPath = join("temp", "output");
     if (!fs.existsSync(outputDirectoryPath)) {
       fs.mkdirSync(outputDirectoryPath, { recursive: true });
     }
 
     const outputFilename = randomUUID() + ".mp4";
-    const outputFilePath = path.join(outputDirectoryPath, outputFilename);
+    const outputFilePath = join(outputDirectoryPath, outputFilename);
 
     return new Promise<string>((resolve, reject) => {
       let command = ffmpeg(pathToInputFile);
@@ -211,15 +211,15 @@ export class CompressService {
     crf: number,
     audioBitrate: number,
     videoBitrate: number,
-    videoFramerate: number
+    videoFramerate: number,
   ) {
-    const outputDirectoryPath = path.join("temp", "output");
+    const outputDirectoryPath = join("temp", "output");
     if (!fs.existsSync(outputDirectoryPath)) {
       fs.mkdirSync(outputDirectoryPath, { recursive: true });
     }
     const outputFilename =
       randomUUID() + (preset === CompressionPreset.MP4 ? ".mp4" : ".webm");
-    const outputFilePath = path.join(outputDirectoryPath, outputFilename);
+    const outputFilePath = join(outputDirectoryPath, outputFilename);
 
     return new Promise<string>((resolve, reject) => {
       let command = ffmpeg(pathToFile);
@@ -289,7 +289,7 @@ export class CompressService {
     fs.unlink(path, (err) => {
       if (err) {
         this.compressorLogger.error(
-          `Failed to delete input file: ${err.message}`
+          `Failed to delete input file: ${err.message}`,
         );
       } else {
         this.compressorLogger.verbose(`Input file deleted: ${path}`);

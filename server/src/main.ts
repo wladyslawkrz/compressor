@@ -13,7 +13,7 @@ async function bootstrap() {
   app.setGlobalPrefix("/v1");
 
   const config = app.get(ConfigService);
-  const PORT = config.get<number>("PORT") || 3010;
+  const PORT = config.getOrThrow<number>("PORT") || 3010;
 
   const docsConfig = new DocumentBuilder()
     .setTitle("web compressor")
