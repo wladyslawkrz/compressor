@@ -4,8 +4,8 @@ WORKDIR /usr/src/app
 
 COPY package.json yarn.lock ./
 
-RUN yarn add sharp --ignore-engines
 RUN yarn
+RUN yarn add sharp --ignore-engines
 
 COPY . .
 
