@@ -18,12 +18,12 @@ export class CompressService {
     images: Express.Multer.File,
     width: number,
     height: number,
-    compressionRatio: number,
+    compressionRatio: number
   ): Promise<string> {
     const filename = "image" + "-" + randomUUID() + ".webp";
 
     const { width: imageWidth, height: imageHeight } = await sharp(
-      images.buffer,
+      images.buffer
     ).metadata();
 
     const resizeProps = { height: imageHeight, width: imageWidth };
@@ -78,7 +78,7 @@ export class CompressService {
     crf: number,
     audioBitrate: number,
     videoBitrate: number,
-    videoFramerate: number,
+    videoFramerate: number
   ) {
     const inputDirectoryPath = join("temp", "input");
     if (!fs.existsSync(inputDirectoryPath)) {
@@ -104,7 +104,7 @@ export class CompressService {
       crf,
       audioBitrate,
       videoBitrate,
-      videoFramerate,
+      videoFramerate
     );
     const videoBuffer = fs.readFileSync(pathToCompressedVideo);
     const fileWithMetadata: BufferedFile = {
@@ -129,7 +129,7 @@ export class CompressService {
     width: number,
     height: number,
     x: number,
-    y: number,
+    y: number
   ) {
     const inputDirectoryPath = join("temp", "input");
     if (!fs.existsSync(inputDirectoryPath)) {
@@ -151,7 +151,7 @@ export class CompressService {
       width,
       height,
       x,
-      y,
+      y
     );
     const videoBuffer = fs.readFileSync(pathToCroppedVideo);
     const fileWithMetadata: BufferedFile = {
@@ -176,7 +176,7 @@ export class CompressService {
     width: number,
     height: number,
     x: number,
-    y: number,
+    y: number
   ) {
     const outputDirectoryPath = join("temp", "output");
     if (!fs.existsSync(outputDirectoryPath)) {
@@ -211,7 +211,7 @@ export class CompressService {
     crf: number,
     audioBitrate: number,
     videoBitrate: number,
-    videoFramerate: number,
+    videoFramerate: number
   ) {
     const outputDirectoryPath = join("temp", "output");
     if (!fs.existsSync(outputDirectoryPath)) {
@@ -289,7 +289,7 @@ export class CompressService {
     fs.unlink(path, (err) => {
       if (err) {
         this.compressorLogger.error(
-          `Failed to delete input file: ${err.message}`,
+          `Failed to delete input file: ${err.message}`
         );
       } else {
         this.compressorLogger.verbose(`Input file deleted: ${path}`);
