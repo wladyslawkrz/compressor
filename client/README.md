@@ -43,3 +43,8 @@ yarn test:unit
 ```sh
 yarn lint
 ```
+
+### Format Code with [Prettier](https://prettier.io/)
+```sh
+yarn format
+```
